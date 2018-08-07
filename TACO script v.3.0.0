@@ -1,0 +1,36 @@
+ubuntu@new-ctl:~$ sudo apt-get update
+ubuntu@new-ctl:~$ sudo apt-get -y upgrade
+ubuntu@new-ctl:~$ sudo apt install -y python python-pip
+ubuntu@new-ctl:~$ sudo apt install -y ceph-common git jq nmap bridge-utils ipcalc
+ubuntu@new-ctl:~$ sudo pip install --upgrade pip==9.0.3
+ubuntu@new-ctl:~$ sudo pip install 'pyOpenSSL==16.2.0'
+ubuntu@new-ctl:~$ sudo pip install 'python-openstackclient'
+
+swapoff -a
+sed -i '/swap/s/^/#/g' /etc/fstab
+modprobe rbd
+vi /etc/hosts -> 아이피 주소와 호스트 이름을 적어줘야 매핑해서 알 수 있다. 
+ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N “”
+cd /etc/ssh/sshd_config -> permitrootLogin yes로 변경
+Service ssh restart 
+Ssh-copy-id 자기자신의 루트계정/일반계정 /원하는 노드의 루트계정/일반계정
+Ssh login 시도
+
+----------------------------———020———---------------------------- 
+cd ~/
+mkdir -p ~/apps
+cd ~/apps
+
+ubuntu@new-ctl:~/apps$ git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
+ubuntu@new-ctl:~/apps/upstream-kubespray$ pip install -r requirements.txt
+ubuntu@new-ctl:~/apps/upstream-kubespray/inventory/local$ vi hosts.ini
+ubuntu@new-ctl:~/apps/upstream-kubespray$ ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/local/hosts.ini ~/apps/upstream-kubespray/cluster.yml
+
+
+//worker node에 파이썬을 설치해야한다.! (파이썬2) 
+ubuntu@new-com:~$ sudo apt-get update
+ubuntu@new-com:~$ sudo apt-get -y upgrade
+ubuntu@new-com:~$ sudo apt install -y python python-pip
+ubuntu@new-com:~$ sudo apt install -y ceph-common git jq nmap bridge-utils ipcalc
+New-com 에서 vi /etc/resolv.conf 파일에서 네입서버를 nameserver 8.8.8.8만 남기기
+
