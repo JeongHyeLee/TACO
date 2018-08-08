@@ -2,6 +2,7 @@
 
 set -ex
 export PATH=$PATH:/usr/local/bin
+
 cd ~/
 mkdir -p ~/apps
 TACO_KUBESPRAY_DIR=~/apps/taco-kubespray
@@ -25,41 +26,42 @@ cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 pip install -r requirements.txt
 
-# need to enter the hostname and ip address formed "<hostname> <ip=0.0.0.0>"
-# to enter the information 1) the user have to put it 2) get the info using "sed"
-# I have to choose the way to do this 
-# Furthermore this version of TACO will be installed for multi-node, So we need that info
-# what is the master , what is the node, how the cluster dependency set... etc.
 echo """[enter the hostname that you want to use as master and worker node respectively]
 how many nodes you want?"""
+read -p "how many nodes you want? : " number
 
-read number
+for i in $(seq $number); do
+   read  -p "#${i} input hostname|ip-address :" hostname ip_address
+   echo $hostname ip=$ip_address>>test.txt
+done
 
-for i in number
-do 
-  echo "hostname:"
-  read hostname
-  name=$(echo $hostname | awk '{print $1}') >/test/test.txt
-  ipad=$(echo $hostname | sed 's/ip=//' | awk '{print $2}') >>/test/test.txt
-done 
+# if the information is in file 
+# not yet
 
-
-
-
-echo """$hostname  
+echo """  
 
 [kube-master]
-taco-aio
+
 
 [etcd]
-taco-aio
+
 
 [kube-node]
-taco-aio
+
 
 [k8s-cluster:children]
 kube-node
-kube-master""" > /inventory/local/host.ini
+kube-master
+
+[controller-node]
+
+[compute-node]
+
+[controller-node:vars]
+node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
+
+[compute-node:vars]
+node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" > /inventory/local/host.ini
 
 ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/host.ini ~/apps/upstream-kubespray/cluster.yml
 
