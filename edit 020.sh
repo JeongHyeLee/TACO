@@ -1,5 +1,5 @@
 #!/bin/bash
-(( EUID )) && echo You need to be root. && exit 1
+
 set -ex
 export PATH=$PATH:/usr/local/bin
 cd ~/
@@ -20,6 +20,7 @@ CACHE_FILE=/tmp/taco-aio
 if [ -f $CACHE_FILE ]; then
   rm -f $CACHE_FILE
 fi
+
 cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 pip install -r requirements.txt
@@ -29,8 +30,23 @@ pip install -r requirements.txt
 # I have to choose the way to do this 
 # Furthermore this version of TACO will be installed for multi-node, So we need that info
 # what is the master , what is the node, how the cluster dependency set... etc.
+echo """[enter the hostname that you want to use as master and worker node respectively]
+how many nodes you want?"""
 
-echo """taco-aio ansible_connection=local local_release_dir={{ansible_env.HOME}}/releases 
+read number
+
+for i in number
+do 
+  echo "hostname:"
+  read hostname
+  name=$(echo $hostname | awk '{print $1}') >/test/test.txt
+  ipad=$(echo $hostname | sed 's/ip=//' | awk '{print $2}') >>/test/test.txt
+done 
+
+
+
+
+echo """$hostname  
 
 [kube-master]
 taco-aio
