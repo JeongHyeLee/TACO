@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -ex
-mkdif test
+mkdir test
 
 echo """[enter the hostname that you want to use as master and worker node respectively]
 how many nodes you want?"""
