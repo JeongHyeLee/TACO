@@ -94,7 +94,6 @@ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat 
 
 helm init --upgrade
 
-# compute-node로 가야 할 곳에 nameserver fmf 8.8.8.8로만 맞춰주는것도 해야한다. 물론 controller server도 건들여야하고 
 echo """
 nameserver 8.8.8.8
 
