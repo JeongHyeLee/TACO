@@ -26,21 +26,21 @@ cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 pip install -r requirements.txt
 
-echo """[enter the hostname that you want to use as master and worker node respectively]
-how many nodes you want?"""
-read -p "master : " number
+echo "[enter the hostname that you want to use as master and worker node and ip address respectively]"
+read -p "how many masters : " number
 for i in $(seq $number); do
-   read  -p "#${i}master hostname|ip-address :" hostname ip_address
+   read  -p "#${i} master hostname|ip-address :" hostname ip_address
    master_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>test.cfg
 done
 
-read -p "worker : " number
+read -p "how many workers : " number
 for i in $(seq $number); do
-   read  -p "#${i}worker hostname|ip-address :" hostname ip_address
+   read  -p "#${i} worker hostname|ip-address :" hostname ip_address
    worker_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>test.cfg
 done
+
 # if the information is in file 
 # not yet
 
@@ -51,18 +51,15 @@ do
 done
 
 echo "[etcd]">>test.cfg
-for arr_item in ${master_array[*]}
-do
+for arr_item in ${master_array[*]}; do
   echo $arr_item >>test.cfg
 done
 
 echo "[kube-node]">>test.cfg
-for arr_item in ${master_array[*]}
-do
+for arr_item in ${master_array[*]}; do
   echo $arr_item >>test.cfg
 done
-for arr_item in ${worker_array[*]}
-do
+for arr_item in ${worker_array[*]}; do
   echo $arr_item >>test.cfg
 done
 
@@ -71,28 +68,26 @@ kube-node
 kube-master""">>test.cfg
 
 echo "[controller-node]">>test.cfg
-for arr_item in ${master_array[*]}
-do
+for arr_item in ${master_array[*]}; do
   echo $arr_item >>test.cfg
 done
 
 echo "[compute-node]">>test.cfg
-for arr_item in ${worker_array[*]}
-do
+for arr_item in ${worker_array[*]}; do
   echo $arr_item >>test.cfg
 done
 echo """[controller-node:vars]
 node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
 
 [compute-node:vars]
-node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" > test.cfg
+node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" >> test.cfg
 
 ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/host.ini ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
 
-helm init --upgrade
+#helm init --upgrade
 
 echo """
 nameserver 8.8.8.8
