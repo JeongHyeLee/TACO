@@ -28,36 +28,60 @@ pip install -r requirements.txt
 
 echo """[enter the hostname that you want to use as master and worker node respectively]
 how many nodes you want?"""
-read -p "how many nodes you want? : " number
-
+read -p "master : " number
 for i in $(seq $number); do
-   read  -p "#${i} input hostname|ip-address :" hostname ip_address
-   echo $hostname ip=$ip_address>>test.txt
+   read  -p "#${i}master hostname|ip-address :" hostname ip_address
+   master_array[${i}-1]=$hostname
+   echo $hostname ip=$ip_address>>/inventory/local/host.ini
 done
 
+read -p "worker : " number
+for i in $(seq $number); do
+   read  -p "#${i}worker hostname|ip-address :" hostname ip_address
+   worker_array[${i}-1]=$hostname
+   echo $hostname ip=$ip_address>>/inventory/local/host.ini
+done
 # if the information is in file 
 # not yet
 
-echo """  
+echo "[kube-master]">>/inventory/local/host.ini
+for arr_item in ${master_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
 
-[kube-master]
+echo "[etcd]">>/inventory/local/host.ini
+for arr_item in ${master_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
 
+echo "[kube-node]">>/inventory/local/host.ini
+for arr_item in ${master_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
+for arr_item in ${worker_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
 
-[etcd]
-
-
-[kube-node]
-
-
-[k8s-cluster:children]
+echo """[k8s-cluster:children]
 kube-node
-kube-master
+kube-master""">>/inventory/local/host.ini
 
-[controller-node]
+echo "[controller-node]">>/inventory/local/host.ini
+for arr_item in ${master_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
 
-[compute-node]
-
-[controller-node:vars]
+echo "[compute-node]">>/inventory/local/host.ini
+for arr_item in ${worker_array[*]}
+do
+  echo $arr_item >>/inventory/local/host.ini
+done
+echo """[controller-node:vars]
 node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
 
 [compute-node:vars]
