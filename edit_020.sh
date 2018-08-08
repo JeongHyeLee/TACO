@@ -32,60 +32,60 @@ read -p "master : " number
 for i in $(seq $number); do
    read  -p "#${i}master hostname|ip-address :" hostname ip_address
    master_array[${i}-1]=$hostname
-   echo $hostname ip=$ip_address>>/inventory/local/host.ini
+   echo $hostname ip=$ip_address>>test.cfg
 done
 
 read -p "worker : " number
 for i in $(seq $number); do
    read  -p "#${i}worker hostname|ip-address :" hostname ip_address
    worker_array[${i}-1]=$hostname
-   echo $hostname ip=$ip_address>>/inventory/local/host.ini
+   echo $hostname ip=$ip_address>>test.cfg
 done
 # if the information is in file 
 # not yet
 
-echo "[kube-master]">>/inventory/local/host.ini
+echo "[kube-master]">>test.cfg
 for arr_item in ${master_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 
-echo "[etcd]">>/inventory/local/host.ini
+echo "[etcd]">>test.cfg
 for arr_item in ${master_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 
-echo "[kube-node]">>/inventory/local/host.ini
+echo "[kube-node]">>test.cfg
 for arr_item in ${master_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 for arr_item in ${worker_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 
 echo """[k8s-cluster:children]
 kube-node
-kube-master""">>/inventory/local/host.ini
+kube-master""">>test.cfg
 
-echo "[controller-node]">>/inventory/local/host.ini
+echo "[controller-node]">>test.cfg
 for arr_item in ${master_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 
-echo "[compute-node]">>/inventory/local/host.ini
+echo "[compute-node]">>test.cfg
 for arr_item in ${worker_array[*]}
 do
-  echo $arr_item >>/inventory/local/host.ini
+  echo $arr_item >>test.cfg
 done
 echo """[controller-node:vars]
 node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
 
 [compute-node:vars]
-node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" > /inventory/local/host.ini
+node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" > test.cfg
 
 ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/host.ini ~/apps/upstream-kubespray/cluster.yml
 
