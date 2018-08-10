@@ -26,54 +26,70 @@ cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 pip install -r requirements.txt
 
-echo """[enter the hostname that you want to use as master and worker node respectively]
-how many nodes you want?"""
-read -p "how many nodes you want? : " number
-
+echo "[enter the hostname that you want to use as master and worker node and ip address respectively]"
+read -p "****how many \"masters\" : " number
 for i in $(seq $number); do
-   read  -p "#${i} input hostname|ip-address :" hostname ip_address
-   echo $hostname ip=$ip_address>>test.txt
+   read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
+   master_array[${i}-1]=$hostname
+   echo $hostname ip=$ip_address>>inventory/local/host.ini
+done
+
+read -p "****how many \"workers\" : " number
+for i in $(seq $number); do
+   read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
+   worker_array[${i}-1]=$hostname
+   echo $hostname ip=$ip_address>>inventory/local/host.ini
 done
 
 # if the information is in file 
 # not yet
 
-echo """  
+echo "[kube-master]">>inventory/local/host.ini
+for arr_item in ${master_array[*]}
+do
+  echo $arr_item >>inventory/local/host.ini
+done
 
-[kube-master]
+echo "[etcd]">>inventory/local/host.ini
+for arr_item in ${master_array[*]}; do
+  echo $arr_item >>inventory/local/host.ini
+done
 
+echo "[kube-node]">>inventory/local/host.ini
+for arr_item in ${master_array[*]}; do
+  echo $arr_item >>inventory/local/host.ini
+done
+for arr_item in ${worker_array[*]}; do
+  echo $arr_item >>inventory/local/host.ini
+done
 
-[etcd]
-
-
-[kube-node]
-
-
-[k8s-cluster:children]
+echo """[k8s-cluster:children]
 kube-node
-kube-master
+kube-master""">>inventory/local/host.ini
 
-[controller-node]
+echo "[controller-node]">>inventory/local/host.ini
+for arr_item in ${master_array[*]}; do
+  echo $arr_item >>inventory/local/host.ini
+done
 
-[compute-node]
-
-[controller-node:vars]
+echo "[compute-node]">>inventory/local/host.ini
+for arr_item in ${worker_array[*]}; do
+  echo $arr_item >>inventory/local/host.ini
+done
+echo """[controller-node:vars]
 node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
-
 [compute-node:vars]
-node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" > /inventory/local/host.ini
+node_labels={"openstack-compute-node":"enabled", "openvswitch":"enabled"}""" >>inventory/local/host.ini
 
-ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/host.ini ~/apps/upstream-kubespray/cluster.yml
+ansible-playbook -u root -b -i ~/apps/upstream-kubespray/inventory/local/host.ini ~/apps/upstream-kubespray/cluster.yml
 
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | cat > /tmp/helm_script.sh \
 && chmod 755 /tmp/helm_script.sh && /tmp/helm_script.sh --version v2.9.1
 
-helm init --upgrade
+#helm init --upgrade
 
-# compute-node로 가야 할 곳에 nameserver fmf 8.8.8.8로만 맞춰주는것도 해야한다. 물론 controller server도 건들여야하고 
 echo """
 nameserver 8.8.8.8
-
 search openstack.svc.cluster.local svc.cluster.local cluster.local
 options ndots:5""" > /etc/resolv.conf
 

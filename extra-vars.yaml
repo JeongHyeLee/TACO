@@ -1,0 +1,8 @@
+# os
+disable_swap: true
+epel_enabled: true
+preinstall_selinux_state: disabled
+
+# copy kubectl to ansible host
+kubectl_localhost: true
+kubeconfig_localhost: true
