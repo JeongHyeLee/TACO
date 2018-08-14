@@ -26,24 +26,28 @@ cd ~/apps
 git clone https://github.com/kubernetes-incubator/kubespray.git upstream-kubespray && cd upstream-kubespray
 pip install -r requirements.txt
 
+### Edit ssh 
+ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+
 echo "[enter the hostname that you want to use as master and worker node and ip address respectively]"
 read -p "****how many \"masters\" : " number
+
 for i in $(seq $number); do
-   read  -p "#${i} input master node's <hostname> <ip-address> :" hostname ip_address
+   read  -p "#${i} input master node's <hostname> <x.x.x.x> :" hostname ip_address
    master_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>inventory/local/host.ini
+   ssh-copy-id $hostname
 done
 
 read -p "****how many \"workers\" : " number
 for i in $(seq $number); do
-   read  -p "#${i} input worker node's <hostname> <ip-address> :" hostname ip_address
+   read  -p "#${i} input worker node's <hostname> <x.x.x.x> :" hostname ip_address
    worker_array[${i}-1]=$hostname
    echo $hostname ip=$ip_address>>inventory/local/host.ini
+   ssh-copy-id $hostname
 done
 
-# if the information is in file 
-# not yet
-
+# host.ini
 echo "[kube-master]">>inventory/local/host.ini
 for arr_item in ${master_array[*]}
 do
@@ -76,6 +80,7 @@ echo "[compute-node]">>inventory/local/host.ini
 for arr_item in ${worker_array[*]}; do
   echo $arr_item >>inventory/local/host.ini
 done
+
 echo """[controller-node:vars]
 node_labels={"openstack-control-plane":"enabled", "openvswitch":"enabled"}
 [compute-node:vars]
